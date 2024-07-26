@@ -11,16 +11,19 @@ ENV MYSQL_PASSWORD=asterisk
 RUN apt-get update && \
     apt-get install -y \
     unixodbc \
-    unixodbc-dev
+    unixodbc-dev \
+    wget \
+    tar \
+    dpkg \
+    odbcinst
 
-# Instale dependências necessárias
-RUN apt-get update && \
-    apt-get install -y wget tar dpkg && \
-    wget https://downloads.mariadb.com/Connectors/odbc/connector-odbc-3.1.14/mariadb-connector-odbc-3.1.14-debian-buster-amd64.tar.gz && \
-    tar -xzvf mariadb-connector-odbc-3.1.14-debian-buster-amd64.tar.gz && \
-    cd mariadb-connector-odbc-3.1.14-debian-buster-amd64 && \
+# Copie o pacote .deb para o contêiner
+COPY odbc-mariadb_3.1.15-3_amd64.deb /tmp/odbc-mariadb.deb
+
+# Instale o pacote .deb e resolva dependências
+RUN dpkg -i /tmp/odbc-mariadb.deb && \
     apt-get install -f -y && \
-    rm -rf mariadb-connector-odbc-3.1.14-debian-buster-amd64.tar.gz mariadb-connector-odbc-3.1.14-debian-buster-amd64
+    rm /tmp/odbc-mariadb.deb
 
 # Exponha a porta padrão do MariaDB
 EXPOSE 3306
