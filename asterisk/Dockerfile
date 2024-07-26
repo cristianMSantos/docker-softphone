@@ -45,6 +45,10 @@ RUN groupadd -r asterisk && useradd -r -g asterisk asterisk
 # Defina o diretório de trabalho para o Asterisk
 WORKDIR /var/lib/asterisk
 
+# Copie arquivos de configuração do mariadb
+COPY ./odbc/odbc.ini /etc/odbc.ini
+COPY ./odbc/odbcinst.ini /etc/odbcinst.ini
+
 # Ajuste as permissões do diretório
 RUN chown -R asterisk:asterisk /var/lib/asterisk /etc/asterisk /var/log/asterisk /var/spool/asterisk
 

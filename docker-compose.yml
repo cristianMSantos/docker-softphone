@@ -15,7 +15,6 @@ services:
       - "8088:8088" # Porta do HTTP
     volumes:
       - ./asterisk/configs:/etc/asterisk
-      - ./mariadb/configs:/etc
     networks:
       - asterisk
     depends_on:
