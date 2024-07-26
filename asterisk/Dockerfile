@@ -21,9 +21,8 @@ RUN apt-get update && \
     pkg-config \
     unixodbc \
     unixodbc-dev \
-    libtool-ltdl \
-    libtool-ltdl-devel \
-    mariadb-connector-odbc \
+    libtool \
+    libltdl-dev \
     && rm -rf /var/lib/apt/lists/* \
     && curl -sL http://downloads.asterisk.org/pub/telephony/asterisk/asterisk-20.9.1.tar.gz | tar xz -C /usr/src
 
