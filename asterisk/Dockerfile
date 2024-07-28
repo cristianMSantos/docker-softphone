@@ -1,11 +1,10 @@
 # Use a imagem base Debian mais recente
 FROM debian:latest
 
-# Atualize e instale o curl, gnupg2 e outros pacotes necessários
+# Atualize e instale pacotes necessários
 RUN apt-get update && \
     apt-get install -y \
     nano \
-    systemctl \
     curl \
     gnupg2 \
     build-essential \
@@ -21,11 +20,16 @@ RUN apt-get update && \
     pkg-config \
     unixodbc \
     unixodbc-dev \
-    libtool \
-    libltdl-dev \
     odbcinst \
-    && rm -rf /var/lib/apt/lists/* \
-    && curl -sL http://downloads.asterisk.org/pub/telephony/asterisk/asterisk-20.9.1.tar.gz | tar xz -C /usr/src
+    wget \
+    tar \
+    dpkg \
+    mariadb-server \
+    mariadb-client \
+    && rm -rf /var/lib/apt/lists/*
+
+# Baixe e extraia o Asterisk
+RUN curl -sL http://downloads.asterisk.org/pub/telephony/asterisk/asterisk-20.9.1.tar.gz | tar xz -C /usr/src
 
 # Defina o diretório de trabalho
 WORKDIR /usr/src/asterisk-20.9.1
@@ -43,15 +47,36 @@ RUN ./configure && \
 # Crie o usuário e grupo 'asterisk'
 RUN groupadd -r asterisk && useradd -r -g asterisk asterisk
 
-# Defina o diretório de trabalho para o Asterisk
-WORKDIR /var/lib/asterisk
+# Ajuste as permissões do diretório
+RUN chown -R asterisk:asterisk /var/lib/asterisk /etc/asterisk /var/log/asterisk /var/spool/asterisk
 
 # Copie arquivos de configuração do mariadb
 COPY ./odbc/odbc.ini /etc/odbc.ini
 COPY ./odbc/odbcinst.ini /etc/odbcinst.ini
 
-# Ajuste as permissões do diretório
-RUN chown -R asterisk:asterisk /var/lib/asterisk /etc/asterisk /var/log/asterisk /var/spool/asterisk
+# Defina variáveis de ambiente para a senha do root e outras configurações
+ENV MYSQL_ROOT_PASSWORD=asterisk
+ENV MYSQL_DATABASE=asterisk
+ENV MYSQL_USER=asterisk
+ENV MYSQL_PASSWORD=asterisk
 
-# Comando padrão para iniciar o Asterisk como o usuário 'asterisk'
-CMD ["asterisk", "-f", "-U", "asterisk"]
+# Copie o pacote .deb para o contêiner
+COPY odbc-mariadb_3.1.15-3_amd64.deb /tmp/odbc-mariadb.deb
+
+# Instale o pacote .deb e resolva dependências
+RUN dpkg -i /tmp/odbc-mariadb.deb && \
+    apt-get install -f -y && \
+    rm /tmp/odbc-mariadb.deb
+
+# Certifique-se de que o diretório do socket do MySQL existe
+RUN mkdir -p /run/mysqld && chown mysql:mysql /run/mysqld
+
+# Copie o script de entrada
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Exponha a porta padrão do MariaDB
+EXPOSE 3306
+
+# Use o script de entrada
+ENTRYPOINT ["/entrypoint.sh"]
