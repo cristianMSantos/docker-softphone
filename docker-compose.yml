@@ -14,19 +14,9 @@ services:
       - "5060:5060/udp"
       - "8088:8088" # Porta do HTTP
       - "3306:3306"
+      - "5038:5038"
     volumes:
       - ./asterisk/configs:/etc/asterisk
       - mariadb_data:/var/lib/mysql
     networks:
       - asterisk
-    # depends_on:
-    #   - mariadb
-  # mariadb:
-  #   build:
-  #     context: ./mariadb
-  #     dockerfile: Dockerfile
-  #   container_name: mariadb
-  #   volumes:
-  #     - mariadb_data:/var/lib/mysql
-  #   networks:
-  #     - asterisk
