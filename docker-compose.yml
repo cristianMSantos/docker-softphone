@@ -4,6 +4,10 @@ volumes:
 networks:
   asterisk:
     driver: bridge
+  softphone:
+    driver: bridge
+  softphone-api:
+    driver: bridge
 services:
   asterisk:
     build:
@@ -19,4 +23,29 @@ services:
       - ./asterisk/configs:/etc/asterisk
       - mariadb_data:/var/lib/mysql
     networks:
+      - asterisk
+      - softphone-api
+  softphone:
+    build:
+      context: ./softphone
+      dockerfile: Dockerfile
+    container_name: softphone
+    volumes:
+      - ./softphone/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - 80:80
+    networks:
+      - softphone
+      - softphone-api
+    depends_on:
+      - softphone-api
+  softphone-api:
+    build: 
+      context: ./softphone-api
+      dockerfile: Dockerfile
+    container_name: softphone-api
+    networks:
+      - softphone-api
+      - asterisk
+    depends_on:
       - asterisk
