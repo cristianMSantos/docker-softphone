@@ -74,6 +74,7 @@ RUN mkdir -p /run/mysqld && chown mysql:mysql /run/mysqld
 # Para dar acesso ao banco de dados para fora do container
 COPY ./mariadb/50-server.cnf /etc/mysql/mariadb.conf.d/50-server.cnf
 
+
 # Copie o script de entrada
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
